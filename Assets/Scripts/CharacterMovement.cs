@@ -32,6 +32,7 @@ public class CharacterMovement : MonoBehaviour
     private bool isCharging = false;          // Trriger when hold the button
     private bool doubleJumpRequested = false; // set in TryDoubleJump()
     private bool hasDoubleJumped = false;     // one per jump
+    private DoubleJumpEffect doubleJumpEffect;// Double Jump Effect object
 
     // Lets other scripts READ isGrounded, but not change it.
     // "=> isGrounded" means "when asked, return isGrounded".
@@ -46,6 +47,8 @@ public class CharacterMovement : MonoBehaviour
 
         // Freeze rotation so the player doesn't fall over when colliding
         rb.constraints = RigidbodyConstraints.FreezeRotation;
+
+        doubleJumpEffect = GetComponent<DoubleJumpEffect>();
     }
 
     // Update is called once per frame
@@ -61,14 +64,33 @@ public class CharacterMovement : MonoBehaviour
         }
 
         // 2. Read Inputs
-        turnInput = Input.GetAxisRaw("Horizontal"); // A/D or Left/Right turn input
+        float moveX = Input.GetAxisRaw("Horizontal"); // A/D or Left/Right turn input
         float moveZ = Input.GetAxisRaw("Vertical");  // W/S or Up/Down forward/backward
 
-        // Rotate the player transform in Update for responsive turning visuals
-        transform.Rotate(0f, turnInput * turnSpeed * Time.deltaTime, 0f);
+        // // Rotate the player transform in Update for responsive turning visuals
+        // transform.Rotate(0f, moveX * turnSpeed * Time.deltaTime, 0f);
 
+        // // Calculate forward movement relative to current facing direction
+        // moveDirection = transform.forward * moveZ;
+
+        Vector3 cameraForward = Camera.main.transform.forward;
+        Vector3 cameraRight = Camera.main.transform.right;
+
+        cameraForward.y = 0.0f;
+        cameraRight.y = 0.0f;
+
+        // Rotate the player transform in Update for responsive turning visuals
         // Calculate forward movement relative to current facing direction
-        moveDirection = transform.forward * moveZ;
+        moveDirection = cameraForward * moveZ + cameraRight * moveX;
+
+        if (moveDirection.magnitude > 0.0f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection.normalized);
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                targetRotation,
+                turnSpeed * Time.deltaTime);
+        }
 
         if (Input.GetKey(KeyCode.LeftShift))
         {
@@ -118,9 +140,7 @@ public class CharacterMovement : MonoBehaviour
 
         if (jumpRequested)
         {
-            float force;
-
-            force = Mathf.Lerp(minJumpForce, maxJumpForce, holdTime / maxHoldTime);
+            float force = Mathf.Lerp(minJumpForce, maxJumpForce, holdTime / maxHoldTime);
 
             Jump(force);
 
@@ -131,6 +151,7 @@ public class CharacterMovement : MonoBehaviour
         if (doubleJumpRequested)
         {
             Jump(doubleJumpForce);
+            doubleJumpEffect?.Play();
             doubleJumpRequested = false;
         }
     }
@@ -152,7 +173,7 @@ public class CharacterMovement : MonoBehaviour
 
     // Tries to jump a second time in mid-air.
     // Returns true if the double jump really happened.
-    private bool TryDoubleJump()
+    public bool TryDoubleJump()
     {
         // Not allowed on the ground, or if it was already used
         if (isGrounded || hasDoubleJumped || !hasDoubleJumpPowerUp) return false;
