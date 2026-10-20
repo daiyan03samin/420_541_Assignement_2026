@@ -12,13 +12,12 @@ public class CharacterMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 3f;      // units per second
     [SerializeField] private float currentSpeed;        // sprint logic
     [SerializeField] private float turnSpeed = 150f;    // degrees per second
-    [SerializeField] private float jumpForce = 5f;      // strength of the jump
+    // [SerializeField] private float jumpForce = 5f;      // strength of the jump
     [SerializeField] private float maxHoldTime = 3f;    // after max hold time, it automatically do the jump 
     [SerializeField] private float holdTime;
     [SerializeField] private float minJumpForce;        // min jump force
     [SerializeField] private float maxJumpForce;        // max jump force
     [SerializeField] private float doubleJumpForce = 4f;// strength of double jump
-    [SerializeField] private bool hasDoubleJumpPowerUp = false;
 
     [Header("Ground Check Settings")]
     [SerializeField] private float groundDistance = 0.5f; // ray length
@@ -37,6 +36,13 @@ public class CharacterMovement : MonoBehaviour
     // Lets other scripts READ isGrounded, but not change it.
     // "=> isGrounded" means "when asked, return isGrounded".
     public bool IsGrounded => isGrounded;
+
+    // Multiplies the normal speed. 1 = normal, 1.5 = 50% faster.
+    // Other scripts (like PlayerPowerUps) are allowed to change it.
+    public float SpeedMultiplier { get; set; } = 1f;
+
+    public bool HasDoubleJumpPowerUp { get; set; }
+
 
     // The methods from the next steps go here, inside the class
     // Start is called before the first frame update
@@ -159,10 +165,12 @@ public class CharacterMovement : MonoBehaviour
     private void movePlayer()
     {
         // Calculate velocity based on current forward vector
-        Vector3 targetVelocity = moveDirection * currentSpeed;
+        Vector3 targetVelocity = moveDirection * currentSpeed * SpeedMultiplier;
 
         // Apply movement while preserving vertical velocity (gravity/jumping)
         rb.linearVelocity = new Vector3(targetVelocity.x, rb.linearVelocity.y, targetVelocity.z);
+
+        // Debug.Log($"Base speed: {currentSpeed}, multiplier: {SpeedMultiplier}, effective speed: {currentSpeed * SpeedMultiplier}");
     }
 
     private void Jump(float force)
@@ -176,7 +184,7 @@ public class CharacterMovement : MonoBehaviour
     public bool TryDoubleJump()
     {
         // Not allowed on the ground, or if it was already used
-        if (isGrounded || hasDoubleJumped || !hasDoubleJumpPowerUp) return false;
+        if (isGrounded || hasDoubleJumped || !HasDoubleJumpPowerUp) return false;
 
         doubleJumpRequested = true;
         hasDoubleJumped = true;
