@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // Moves the player with a Rigidbody:
 // A/D or Left/Right arrows to ROTATE, W/S or Up/Down to move Forward/Backward, Shift to Run and Space to jump.
@@ -32,6 +33,7 @@ public class CharacterMovement : MonoBehaviour
     private bool doubleJumpRequested = false; // set in TryDoubleJump()
     private bool hasDoubleJumped = false;     // one per jump
     private DoubleJumpEffect doubleJumpEffect;// Double Jump Effect object
+    private Vector3 startPosition;
 
     // Lets other scripts READ isGrounded, but not change it.
     // "=> isGrounded" means "when asked, return isGrounded".
@@ -55,6 +57,8 @@ public class CharacterMovement : MonoBehaviour
         rb.constraints = RigidbodyConstraints.FreezeRotation;
 
         doubleJumpEffect = GetComponent<DoubleJumpEffect>();
+
+        startPosition = transform.position;
     }
 
     // Update is called once per frame
@@ -189,5 +193,15 @@ public class CharacterMovement : MonoBehaviour
         doubleJumpRequested = true;
         hasDoubleJumped = true;
         return true;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("DeathPlane"))
+        {
+            GameManager.Instance.ResetScore();
+
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 }

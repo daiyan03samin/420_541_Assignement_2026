@@ -52,4 +52,8 @@ public class GameManager : MonoBehaviour
         FinalScore = Score;
     }
 
+    public void ResetScore()
+    {
+        Score = 0;
+    }
 }
