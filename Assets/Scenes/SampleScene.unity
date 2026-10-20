@@ -1521,6 +1521,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   endSceneName: EndScene
+  finishEffectPrefab: {fileID: 8111034835842342044, guid: 816ac163500b8aa4f93a2b30852333fc, type: 3}
 --- !u!65 &1346707461
 BoxCollider:
   m_ObjectHideFlags: 0
