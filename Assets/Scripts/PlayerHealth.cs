@@ -15,7 +15,7 @@ public class PlayerHealth : MonoBehaviour
 
         if (health == 0)
         {
-            GameManager.Instance.ResetScore();
+            // GameManager.Instance.ResetScore();
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
     }

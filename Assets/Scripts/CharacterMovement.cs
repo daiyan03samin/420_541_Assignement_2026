@@ -199,7 +199,7 @@ public class CharacterMovement : MonoBehaviour
     {
         if (other.CompareTag("DeathPlane"))
         {
-            GameManager.Instance.ResetScore();
+            // GameManager.Instance.ResetScore();
 
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
